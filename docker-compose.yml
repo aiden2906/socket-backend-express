@@ -1,0 +1,22 @@
+version: '2.2'
+
+services: 
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: "nodejs"
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: "socketexpress"
+    ports: 
+      - 5678:5432
+  
+  web:
+    image: socketexpress
+    command: "npm run start"
+    depends_on:
+      - db
+    ports:
+      - 3456:3456
+    expose: 
+      - 3456

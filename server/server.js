@@ -14,7 +14,7 @@ const messages = [];
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get('/messages', (req, res) => {
+app.get('/message', (req, res) => {
   res.send(messages);
 });
 
@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 });
 
 
-app.post('/messages', (req, res) => {
+app.post('/message', (req, res) => {
   messages.push(req.body);
   io.emit('message', req.body);
   res.send(messages);
