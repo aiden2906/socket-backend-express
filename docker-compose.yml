@@ -1,11 +1,13 @@
-version: '2.2'
+version: '3.7'
 
 services: 
   db:
     image: postgres
     restart: always
+    volumes:
+      - socketexpress-postgresql:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: "nodejs"
+      POSTGRES_USER: "superuser"
       POSTGRES_PASSWORD: "123456"
       POSTGRES_DB: "socketexpress"
     ports: 
@@ -14,9 +16,16 @@ services:
   web:
     image: socketexpress
     command: "npm run start"
+    volumes:
+      - .:/app
+      - socketexpress-node_modules:/app/node_modules
     depends_on:
       - db
     ports:
       - 3456:3456
     expose: 
       - 3456
+
+volumes:
+  socketexpress-postgresql:
+  socketexpress-node_modules:
