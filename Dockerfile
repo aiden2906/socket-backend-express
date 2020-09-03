@@ -1,7 +1,6 @@
 FROM node
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package.json ./
+RUN npm i -g nodemon
 RUN npm install
 COPY . /app
-# EXPOSE 3456
-# CMD ["node", "server/server.js"]

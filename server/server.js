@@ -1,33 +1,24 @@
 const bodyParser = require('body-parser');
 const express = require('express');
-const { Client } = require('pg');
-const { create_database, create_table } = require('./query');
-
-const connectionString = `postgresql://nodejs:123456@db:5432/socketexpress`;
-const client = new Client({
-  connectionString: connectionString,
-});
-
+const {createConnection} = require('typeorm');
 const app = express();
 const port = 3456;
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-async function connect() {
-  try {
-    await client.connect();
-  } catch (err) {
-    console.log(err);
-  }
-}
+const socketHash={};
+let connection;
+const connectDB = async () => {
+  connection = await createConnection();
+};
+//TODO: API register (name, username)
+// API login (username)
+// API create message, list conversation
 
 (async function server() {
-  await connect();
+  await connectDB();
   app.get('/message', (req, res) => {
-    client.query(`SELECT * FROM message;`).then((resp) => res.send(resp.rows));
   });
 
   app.get('/', (req, res) => {
@@ -35,19 +26,27 @@ async function connect() {
   });
 
   app.post('/message', (req, res) => {
-    client
-      .query(`INSERT INTO message VALUES (2,2,'${req.body.message}');`)
-      .then((res) => {
-        io.emit('message', req.body);
-        res.send(messages);
-      })
-      .catch((err) => console.log(err))
-      .finally(() => {
-        client.end();
-      });
+    // const {roomId, userId, content, createdAt} = (req && req.body) || {};
+    // client
+    //   .query(`INSERT INTO message VALUES (${roomId},${userId},'${content}','${createdAt}');`)
+    //   .then((resp) => {
+    //     const user1 = sockerHash[user1Id];
+    //     const user2 = sockerHash[user2Id];
+    //     user1.emit('message', req.body);
+    //     user2.emit('message', req.body);
+    //     res.send(resp);
+    //   })
+    //   .catch((err) => console.log(err))
+    //   .finally(() => {
+    //     client.end();
+    //   });
   });
 
-  io.on('connection', () => {
+  io.on('connection', (socket) => {
+    socket.on('login', (data)=>{
+      const {username} = data;
+      socketHash[username] = socket;
+    })
     console.log('a user is connected');
   });
   app.listen(port, () => {

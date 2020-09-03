@@ -1,0 +1,11 @@
+{
+  "type": "postgres",
+  "host": "db",
+  "port": 5432,
+  "username": "nodejs",
+  "password": "123456",
+  "database": "socketexpress",
+  "synchronize": true,
+  "logging": true,
+  "entities": ["server/entities/*.js"]
+}

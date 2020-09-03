@@ -6,10 +6,6 @@ services:
     restart: always
     volumes:
       - socketexpress-postgresql:/var/lib/postgresql/data
-    # environment:
-    #   POSTGRES_USER: "nodejs"
-    #   POSTGRES_PASSWORD: "123456"
-    #   POSTGRES_DB: "socketexpress"
     env_file: 
       - database.env
     ports: 
@@ -17,7 +13,7 @@ services:
   
   web:
     image: socketexpress
-    command: "npm run start"
+    command: "npm run start:dev"
     volumes:
       - .:/app
       - socketexpress-node_modules:/app/node_modules
