@@ -49,7 +49,11 @@ const connectDB = async () => {
 
   app.post('/login', async (req, res) => {
     const { username } = (req && req.body) || {};
-    const user = await userRepo.findOne(username);
+    const user = await userRepo.findOne({
+      where: {
+        username,
+      },
+    });
     if (user) {
       res.send(true);
       return;
@@ -132,7 +136,7 @@ const connectDB = async () => {
     }
     const queryBuilder = await conversationRepo
       .createQueryBuilder(`conversation`)
-      .where(`conversation.user1Id IN (:...values) AND conversation.user2Id IN (:...values)`, {values: [user1.id, user2.id]});
+      .where(`conversation.user1Id IN (:...values) AND conversation.user2Id IN (:...values)`, { values: [user1.id, user2.id] });
 
     const conversation = await queryBuilder.getOne();
     if (!conversation) {
