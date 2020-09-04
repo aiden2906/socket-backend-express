@@ -21,9 +21,6 @@ const socketHash = {};
 const connectDB = async () => {
   return createConnection();
 };
-//TODO: API register (name, username)
-// API login (username)
-// API create message, list conversation
 
 (async function main() {
   const connection = await connectDB();
@@ -57,7 +54,9 @@ const connectDB = async () => {
       res.send(true);
       return;
     }
-    return res.send(false);
+    return res.status(400).send({
+      message: 'username invalid',
+    });
   });
 
   app.get('/conversation', async (req, res) => {
@@ -105,14 +104,14 @@ const connectDB = async () => {
     return res.send(result);
   });
 
-  // app.get('/message', (req, res) => {});
-
   app.post('/message', async (req, res) => {
     const { conversationId, userId, content, roommateId } = (req && req.body) || {};
     const user1 = await userRepo.findOne(userId);
     const user2 = await userRepo.findOne(roommateId);
     if (!user1 || !user2) {
-      return res.send(false);
+      return res.status(400).send({
+        message: 'user invalid',
+      });
     }
     let conversation = await conversationRepo.findOne(conversationId);
     if (!conversation) {
@@ -134,8 +133,8 @@ const connectDB = async () => {
   });
 
   io.on('connection', (socket) => {
-    socket.on('login', (data) => {
-      socketHash[data] = socket;
+    socket.on('login', (username) => {
+      socketHash[username] = socket;
     });
     console.log('a user is connected');
   });
