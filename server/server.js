@@ -60,17 +60,26 @@ const connectDB = async () => {
   });
 
   app.get('/conversation', async (req, res) => {
-    const { userId } = (req && req.query) || {};
+    const { username } = (req && req.query) || {};
+    const user = await userRepo.findOne({
+      where: {
+        username,
+      },
+    });
     const queryBuilder = conversationRepo
       .createQueryBuilder('conversation')
-      .where(`conversation.user1Id = :userId OR conversation.user2Id = :userId`, { userId });
+      .where(`conversation.user1Id = :userId OR conversation.user2Id = :userId`, { userId: user.id });
     const conversations = await queryBuilder.getMany();
     return res.send(conversations);
   });
 
   app.get('/conversation/:id', async (req, res) => {
     const { conversationId } = (req && req.param) || {};
-    const conversation = await conversationRepo.findOne(conversationId);
+    const conversation = await conversationRepo.findOne({
+      where: {
+        id: conversationId,
+      },
+    });
     if (!conversation)
       return res.status(400).send({
         message: 'conversation id invalid',
@@ -105,22 +114,34 @@ const connectDB = async () => {
   });
 
   app.post('/message', async (req, res) => {
-    const { conversationId, userId, content, roommateId } = (req && req.body) || {};
-    const user1 = await userRepo.findOne(userId);
-    const user2 = await userRepo.findOne(roommateId);
+    const { username1, username2, content } = (req && req.body) || {};
+    const user1 = await userRepo.findOne({
+      where: {
+        username: username1,
+      },
+    });
+    const user2 = await userRepo.findOne({
+      where: {
+        username: username2,
+      },
+    });
     if (!user1 || !user2) {
       return res.status(400).send({
         message: 'user invalid',
       });
     }
-    let conversation = await conversationRepo.findOne(conversationId);
+    const queryBuilder = await conversationRepo
+      .createQueryBuilder(`conversation`)
+      .where(`conversation.user1Id IN (:...values) AND conversation.user2Id IN (:...values)`, {values: [user1.id, user2.id]});
+
+    const conversation = await queryBuilder.getOne();
     if (!conversation) {
-      conversation = await createConversation(userId, roommateId);
+      conversation = await createConversation(user1.id, user2.id);
     }
     const message = messageRepo.create({
-      content,
-      userId,
       conversationId: conversation.id,
+      userId: user1.id,
+      content,
     });
     const result = await messageRepo.save(message);
     socketHash[user1.username].emit('message', result);
