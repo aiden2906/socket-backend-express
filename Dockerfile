@@ -1,6 +1,7 @@
-FROM node
-WORKDIR /app
+FROM node:12.18.2-alpine
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 COPY package.json ./
-RUN npm i -g nodemon
 RUN npm install
-COPY . /app
+COPY . /usr/src/app
+CMD [ "npm", "start" ]
