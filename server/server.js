@@ -79,6 +79,15 @@ const connectDB = async () => {
       .createQueryBuilder('conversation')
       .where(`conversation.user1Id = :userId OR conversation.user2Id = :userId`, { userId: user.id });
     const conversations = await queryBuilder.getMany();
+    await Promise.all(
+      conversations.map(async (c) => {
+        c.messages = await messageRepo.find({
+          where: {
+            conversationId: c.id,
+          },
+        });
+      })
+    );
     return res.send(conversations);
   });
 
