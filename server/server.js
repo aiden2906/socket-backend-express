@@ -63,10 +63,10 @@ const connectDB = async () => {
     });
   });
 
-  app.get('/user', async (req,res)=>{
+  app.get('/user', async (req, res) => {
     const users = await userRepo.find();
     return res.send(users);
-  })
+  });
 
   app.get('/conversation', async (req, res) => {
     const { username } = (req && req.query) || {};
@@ -117,7 +117,7 @@ const connectDB = async () => {
       username,
       description,
       name,
-      avatar
+      avatar,
     });
     const result = await userRepo.save(user);
     return res.send(result);
@@ -139,7 +139,7 @@ const connectDB = async () => {
       return res.status(400).send({
         message: 'user invalid',
       });
-    };
+    }
     const queryBuilder = await conversationRepo
       .createQueryBuilder(`conversation`)
       .where(`conversation.user1Id IN (:...values) AND conversation.user2Id IN (:...values)`, { values: [user1.id, user2.id] });
