@@ -1,7 +1,7 @@
 FROM node:12.18.2-alpine
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /app
+WORKDIR /app
 COPY package.json ./
 RUN npm install
-COPY ./server /usr/src/app/server
+COPY ./server /app/server
 CMD [ "npm", "start" ]
