@@ -55,13 +55,18 @@ const connectDB = async () => {
       },
     });
     if (user) {
-      res.send(true);
+      res.send(user);
       return;
     }
     return res.status(400).send({
       message: 'username invalid',
     });
   });
+
+  app.get('/user', async (req,res)=>{
+    const users = await userRepo.find();
+    return res.send(users);
+  })
 
   app.get('/conversation', async (req, res) => {
     const { username } = (req && req.query) || {};
@@ -78,10 +83,10 @@ const connectDB = async () => {
   });
 
   app.get('/conversation/:id', async (req, res) => {
-    const { conversationId } = (req && req.param) || {};
+    const { id } = (req && req.params) || {};
     const conversation = await conversationRepo.findOne({
       where: {
-        id: conversationId,
+        id: id,
       },
     });
     if (!conversation)
@@ -97,7 +102,7 @@ const connectDB = async () => {
   });
 
   app.post('/register', async (req, res) => {
-    const { username, description, name } = (req && req.body) || {};
+    const { username, description, name, avatar } = (req && req.body) || {};
     const existedUser = await userRepo.findOne({
       where: {
         username,
@@ -112,6 +117,7 @@ const connectDB = async () => {
       username,
       description,
       name,
+      avatar
     });
     const result = await userRepo.save(user);
     return res.send(result);
@@ -133,12 +139,12 @@ const connectDB = async () => {
       return res.status(400).send({
         message: 'user invalid',
       });
-    }
+    };
     const queryBuilder = await conversationRepo
       .createQueryBuilder(`conversation`)
       .where(`conversation.user1Id IN (:...values) AND conversation.user2Id IN (:...values)`, { values: [user1.id, user2.id] });
 
-    const conversation = await queryBuilder.getOne();
+    let conversation = await queryBuilder.getOne();
     if (!conversation) {
       conversation = await createConversation(user1.id, user2.id);
     }
