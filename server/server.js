@@ -133,7 +133,7 @@ const connectDB = async () => {
   });
 
   app.post('/message', async (req, res) => {
-    const { username1, username2, content } = (req && req.body) || {};
+    const { from: username1, to: username2, content } = (req && req.body) || {};
     const user1 = await userRepo.findOne({
       where: {
         username: username1,
@@ -163,8 +163,16 @@ const connectDB = async () => {
       content,
     });
     const result = await messageRepo.save(message);
-    socketHash[user1.username].emit('message', result);
-    socketHash[user2.username].emit('message', result);
+    try {
+      socketHash[user1.username].emit('message', result);
+    } catch(err){
+      console.log(err);
+    }
+    try {
+      socketHash[user2.username].emit('message', result);
+    } catch(err){
+      console.log(err);
+    }
     return res.send(true);
   });
 
